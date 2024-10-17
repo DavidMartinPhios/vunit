@@ -90,3 +90,96 @@ A VC typically has an associated package defining procedures for sending to and 
 Each VC instance is associated with a handle that is created in the test bench and set as a generic on the VC
 instantiation.
 The handle is given as an argument to the procedure calls to direct messages to the specific VC instance.
+
+
+VC and VCI Compliance Testing
+=============================
+
+VUnit establishes a standard for VCs and VCIs, designed around a set of rules that promote flexibility, reusability, interoperability,
+and future-proofing of VCs and VCIs.
+
+Rule 1
+------
+
+The file containing a VC entity shall include only one entity, and the file containing a VCI package shall include only one package.
+
+**Rationale**: This simplifies compliance testing, as the VC/VCI can be referenced by file name.
+
+Rule 2
+------
+
+The function used to create a new instance of a VC (the constructor) shall have a name starting with ``new_``.
+
+**Rationale**: This naming convention allows the compliance test to easily identify the constructor and evaluate it against other applicable rules.
+
+Rule 3
+------
+
+A VC constructor shall include an ``id`` parameter, allowing the user to specify the VC's identity.
+
+**Rationale**: This provides users control over the namespace assigned to the VC.
+
+Rule 4
+------
+
+The ``id`` parameter shall default to ``null_id``. If not overridden, the ``id`` shall follow the format ``<provider>:<VC name>:<n>``, where
+``<n>`` starts at 1 for the first instance of the VC and increments with each subsequent instance.
+
+**Rationale**: This structured format ensures clear identification while preventing name collisions when combining VCs from different providers.
+
+Rule 5
+------
+
+All identity-supporting objects associated with the VC (such as loggers, actors, and events) shall be assigned an identity within the namespace
+defined by the constructor’s ``id`` parameter.
+
+**Rationale**: This gives users control over these objects and allows for easy association of log messages with a specific VC instance.
+
+Rule 6
+------
+
+All checkers used by the VC shall report to the VC’s loggers.
+
+**Rationale**: This ensures that error messages are clearly linked to a specific VC instance.
+
+Rule 7
+------
+
+A VC constructor shall include an ``unexpected_msg_type_policy`` parameter, allowing users to define the action taken when the VC receives an unexpected message type.
+
+**Rationale**: A VC actor subscribing to another actor may receive irrelevant messages, while VCs addressed directly should only receive messages they can process.
+
+Rule 10
+-------
+
+A VC shall keep the ``test_runner_cleanup`` entry gate locked while it has unfinished work, and must unlock the gate at all other times.
+
+**Rationale**: This prevents premature termination of the testbench.
+
+Rule 11
+-------
+
+All fields in the handle returned by the constructor shall begin with the prefix ``p_``.
+
+**Rationale**: This emphasizes that all fields are private, which simplifies future updates without breaking backward compatibility.
+
+Rule 12
+-------
+
+The standard configuration, ``std_cfg_t``, consisting of the required parameters for the constructor, shall be accessible through the handle via a ``get_std_cfg`` call.
+
+**Rationale**: This enables reuse of common operations across multiple VCs.
+
+Rule 13
+-------
+
+A VC shall only have one generic.
+
+**Rationale**: Representing a VC with a single object simplifies code management. Since all handle fields are private, future updates are less likely to break backward compatibility.
+
+Rule 14
+-------
+
+All VCs shall support the sync interface.
+
+**Rationale**: Being able to verify whether a VC is idle and introduce delays between transactions is a common and useful feature for VC users.
