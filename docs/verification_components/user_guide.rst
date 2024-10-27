@@ -183,3 +183,10 @@ Rule 14
 All VCs shall support the sync interface.
 
 **Rationale**: Being able to verify whether a VC is idle and introduce delays between transactions is a common and useful feature for VC users.
+
+Rule 15
+-------
+
+A VC shall keep the ``test_runner_cleanup`` phase entry gate locked while there are pending operations.
+
+**Rationale**: Locking the gate prevents the simulation from terminating prematurely.
