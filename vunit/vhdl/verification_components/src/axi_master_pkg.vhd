@@ -157,13 +157,16 @@ package body axi_master_pkg is
                                   write_high_probability : real := 1.0;
                                   read_high_probability : real := 1.0
   ) return axi_master_t is
-    variable bus_handle : bus_master_t := new_bus(
-      data_length,
-      address_length,
-      byte_length,
-      logger,
-      actor
-    );
+    impure function create_bus (logger : logger_t) return bus_master_t is
+      begin
+        return new_bus(
+          data_length => data_length,
+          address_length => address_length,
+          logger => logger,
+          actor => actor
+        );
+    end function;
+    variable logger_tmp : logger_t := null_logger;
     variable id_tmp : id_t := null_id;
     constant parent : id_t := get_id("vunit_lib:axi_master");
   begin
@@ -172,9 +175,14 @@ package body axi_master_pkg is
     else
       id_tmp := id;
     end if;
+    if logger = null_logger then
+      logger_tmp := get_logger(id_tmp);
+    else
+      logger_tmp := logger;
+    end if;
     return (
       p_id => id_tmp,
-      p_bus_handle => bus_handle,
+      p_bus_handle => create_bus(logger_tmp),
       p_drive_invalid => drive_invalid,
       p_drive_invalid_val => drive_invalid_val,
       p_write_high_probability => write_high_probability,
