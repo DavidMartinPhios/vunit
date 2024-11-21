@@ -15,13 +15,15 @@ use work.bus_master_pkg.all;
 use work.com_pkg.send;
 use work.com_types_pkg.all;
 use work.logger_pkg.all;
+use work.id_pkg.all;
 use work.queue_pkg.all;
 
 package axi_master_pkg is
 
   -- Handle to VC instance
   type axi_master_t is record
-    -- These fields are private, do not use directly
+    -- Private
+    p_id : id_t;
     p_bus_handle : bus_master_t;
     p_drive_invalid : boolean;
     p_drive_invalid_val : std_logic;
@@ -29,7 +31,9 @@ package axi_master_pkg is
     p_read_high_probability : real range 0.0 to 1.0;
   end record;
 
-  impure function new_axi_master(data_length : natural;
+  impure function new_axi_master(
+                                  id : id_t := null_id;
+                                  data_length : natural;
                                   address_length : natural;
                                   byte_length : natural := 8;
                                   logger : logger_t := bus_logger;
@@ -141,7 +145,9 @@ package axi_master_pkg is
 end package;
 
 package body axi_master_pkg is
-  impure function new_axi_master(data_length : natural;
+  impure function new_axi_master(
+                                  id : id_t := null_id;
+                                  data_length : natural;
                                   address_length : natural;
                                   byte_length : natural := 8;
                                   logger : logger_t := bus_logger;
@@ -158,8 +164,16 @@ package body axi_master_pkg is
       logger,
       actor
     );
+    variable id_tmp : id_t := null_id;
+    constant parent : id_t := get_id("vunit_lib:axi_master");
   begin
+    if id = null_id then
+      id_tmp := get_id(to_string(num_children(parent) + 1), parent);
+    else
+      id_tmp := id;
+    end if;
     return (
+      p_id => id_tmp,
       p_bus_handle => bus_handle,
       p_drive_invalid => drive_invalid,
       p_drive_invalid_val => drive_invalid_val,
