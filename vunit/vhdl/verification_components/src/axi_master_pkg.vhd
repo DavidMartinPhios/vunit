@@ -12,11 +12,12 @@ use ieee.numeric_std.all;
 
 use work.axi_pkg.all;
 use work.bus_master_pkg.all;
-use work.com_pkg.send;
+use work.com_pkg.all;
 use work.com_types_pkg.all;
 use work.logger_pkg.all;
 use work.id_pkg.all;
 use work.queue_pkg.all;
+use work.vc_pkg.all;
 
 package axi_master_pkg is
 
@@ -29,6 +30,7 @@ package axi_master_pkg is
     p_drive_invalid_val : std_logic;
     p_write_high_probability : real range 0.0 to 1.0;
     p_read_high_probability : real range 0.0 to 1.0;
+    p_unexpected_msg_type_policy : unexpected_msg_type_policy_t;
   end record;
 
   impure function new_axi_master(
@@ -38,6 +40,7 @@ package axi_master_pkg is
                                   byte_length : natural := 8;
                                   logger : logger_t := bus_logger;
                                   actor : actor_t := null_actor;
+                                  unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail;
                                   drive_invalid : boolean := true;
                                   drive_invalid_val : std_logic :=  'X';
                                   write_high_probability : real := 1.0;
@@ -152,6 +155,7 @@ package body axi_master_pkg is
                                   byte_length : natural := 8;
                                   logger : logger_t := bus_logger;
                                   actor : actor_t := null_actor;
+                                  unexpected_msg_type_policy : unexpected_msg_type_policy_t := fail;
                                   drive_invalid : boolean := true;
                                   drive_invalid_val : std_logic :=  'X';
                                   write_high_probability : real := 1.0;
@@ -186,7 +190,9 @@ package body axi_master_pkg is
       p_drive_invalid => drive_invalid,
       p_drive_invalid_val => drive_invalid_val,
       p_write_high_probability => write_high_probability,
-      p_read_high_probability => read_high_probability);
+      p_read_high_probability => read_high_probability,
+      p_unexpected_msg_type_policy => unexpected_msg_type_policy
+    );
   end;
 
   procedure write_axi(signal net : inout network_t;

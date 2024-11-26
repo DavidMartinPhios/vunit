@@ -27,6 +27,7 @@ use work.log_levels_pkg.all;
 use work.logger_pkg.all;
 use work.queue_pkg.all;
 use work.sync_pkg.all;
+use work.vc_pkg.all;
 
 entity axi_master is
   generic (
@@ -92,7 +93,9 @@ begin
       end if;
       handle_wait_until_idle(net, msg_type, request_msg);
     else
-      unexpected_msg_type(msg_type);
+      if axi_master_handle.p_unexpected_msg_type_policy = fail then
+        unexpected_msg_type(msg_type);
+      end if;
     end if;
   end process;
 
